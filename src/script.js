@@ -13,6 +13,17 @@ const GEOMETRY = {
   bodyOverlap: 7,
 };
 
+const SCENE = {
+  characterWidthRatio: 0.65,
+  minCharacterWidth: 220,
+  maxCharacterWidth: 430,
+  scrollLengthMultiplier: 7.5,
+  minScrollLength: 5400,
+  headTop: 24,
+  bodyTopRatio: 0.58,
+  easingPower: 1.3,
+};
+
 const root = document.documentElement;
 const experience = document.querySelector(".experience");
 const canvas = document.querySelector(".character-canvas");
@@ -31,21 +42,18 @@ function setSceneScale() {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const imageAspect = SOURCE_WIDTH / SOURCE_HEIGHT;
-  const isNarrowMobile = viewportWidth < 380;
-  const isCompactMobile = viewportWidth < 430;
-  const isMobile = viewportWidth < 720;
-
-  const characterWidth = isNarrowMobile
-    ? Math.min(viewportWidth * 0.68, 236)
-    : isCompactMobile
-    ? Math.min(viewportWidth * 0.72, 280)
-    : isMobile
-    ? Math.min(viewportWidth * 0.78, 320)
-    : Math.min(viewportWidth * 0.34, 430);
+  const characterWidth = clamp(
+    viewportWidth * SCENE.characterWidthRatio,
+    SCENE.minCharacterWidth,
+    SCENE.maxCharacterWidth,
+  );
   const characterHeight = characterWidth / imageAspect;
   const scale = characterWidth / SOURCE_WIDTH;
-  const scrollLength = Math.max(viewportHeight * 7.5, 5400);
-  const desiredHeadTop = isNarrowMobile ? 84 : isCompactMobile ? 66 : isMobile ? 22 : 12;
+  const scrollLength = Math.max(
+    viewportHeight * SCENE.scrollLengthMultiplier,
+    SCENE.minScrollLength,
+  );
+  const desiredHeadTop = SCENE.headTop;
   const y = desiredHeadTop - GEOMETRY.headArtTop * scale;
 
   metrics = {
@@ -74,14 +82,12 @@ function updateScrollState() {
     return;
   }
 
-  const { viewportHeight, viewportWidth, y, bodyCut, bodyOverlap, neckTop } = metrics;
-  const isNarrowMobile = viewportWidth < 380;
-  const isCompactMobile = viewportWidth < 430;
+  const { viewportHeight, y, bodyCut, bodyOverlap, neckTop } = metrics;
   const scrollRange = Math.max(experience.offsetHeight - window.innerHeight, 1);
   const progress = clamp(window.scrollY / scrollRange, 0, 1);
-  const eased = 1 - Math.pow(1 - progress, 1.3);
+  const eased = 1 - Math.pow(1 - progress, SCENE.easingPower);
   const bodyTopAtRest = y + bodyCut - bodyOverlap;
-  const desiredBodyTop = viewportHeight * (isNarrowMobile ? 0.62 : isCompactMobile ? 0.59 : viewportWidth < 720 ? 0.56 : 0.58);
+  const desiredBodyTop = viewportHeight * SCENE.bodyTopRatio;
   const maxBodyOffset = Math.max(desiredBodyTop - bodyTopAtRest, 0);
   const bodyOffset = eased * maxBodyOffset;
   const bodyTop = bodyTopAtRest + bodyOffset;
