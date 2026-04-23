@@ -179,7 +179,7 @@ function requestUpdate() {
 }
 
 window.addEventListener("resize", setSceneScale);
-window.addEventListener("scroll", requestUpdate, { passive: true });
+window.addEventListener("scroll", requestUpdate);
 
 sourceImage.addEventListener("load", () => {
   setSceneScale();
