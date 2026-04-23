@@ -181,10 +181,8 @@ function requestUpdate() {
 window.addEventListener("resize", setSceneScale);
 window.addEventListener("scroll", requestUpdate);
 
-sourceImage.addEventListener("load", () => {
+if (sourceImage.complete && sourceImage.naturalWidth > 0) {
   setSceneScale();
-});
-
-if (sourceImage.complete) {
-  setSceneScale();
+} else {
+  sourceImage.addEventListener("load", setSceneScale, { once: true });
 }
